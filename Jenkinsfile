@@ -2,20 +2,24 @@ pipeline {
     agent any
 
     stages {
-        stage('Install Dependencies') {
+
+        stage('Install dependencies') {
             steps {
-                dir('backend') {
-                    sh 'npm install'
-                }
+                sh 'npm install'
             }
         }
 
-        stage('Verify Environment') {
+        stage('Verify Node') {
             steps {
-                dir('backend') {
-                    sh 'node -v'
-                }
+                sh 'node -v'
             }
         }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t task-app .'
+            }
+        }
+
     }
 }
