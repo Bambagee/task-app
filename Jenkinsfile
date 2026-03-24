@@ -10,13 +10,23 @@ environment {
 
 stages {
 
-    stage('Checkout Code') {
+    stage('Install Dependencies') {
         steps {
-            checkout scm
+            dir('backend') {
+                sh 'npm install'
+            }
         }
     }
 
-    stage('Build Image') {
+    stage('Verify Environment') {
+        steps {
+            dir('backend') {
+                sh 'node -v'
+            }
+        }
+    }
+
+    stage('Build Docker Image') {
         steps {
             sh 'docker build -t task-app .'
         }
