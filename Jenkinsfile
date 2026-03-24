@@ -1,7 +1,6 @@
 pipeline {
 agent any
 
-```
 environment {
     DOCKER_USERNAME = "bambadra"
     IMAGE_NAME = "docker-task-app_repo"
@@ -44,6 +43,5 @@ stages {
         }
     }
 }
-```
 
 }
