@@ -1,27 +1,39 @@
 pipeline {
-    agent any
+agent any
 
-    stages {
-        stage('Install Dependencies') {
-            steps {
-                dir('backend') {
-                    sh 'npm install'
-                }
-            }
-        }
+```
+environment {
+    DOCKER_USERNAME = "bambadra"
+    IMAGE_NAME = "docker-task-app_repo"
+    TAG = "v1"
+}
 
-        stage('Verify Environment') {
-            steps {
-                dir('backend') {
-                    sh 'node -v'
-                }
-            }
-        }
+stages {
 
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t task-app .'
-            }
+    stage('Checkout Code') {
+        steps {
+            checkout scm
         }
     }
+
+    stage('Build Image') {
+        steps {
+            sh 'docker build -t task-app .'
+        }
+    }
+
+    stage('Tag Image') {
+        steps {
+            sh 'docker tag task-app $DOCKER_USERNAME/$IMAGE_NAME:$TAG'
+        }
+    }
+
+    stage('Push Image') {
+        steps {
+            sh 'docker push $DOCKER_USERNAME/$IMAGE_NAME:$TAG'
+        }
+    }
+}
+```
+
 }
