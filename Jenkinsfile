@@ -1,6 +1,5 @@
 pipeline {
     agent any
-
     stages {
         stage('Install Dependencies') {
             steps {
@@ -9,7 +8,6 @@ pipeline {
                 }
             }
         }
-
         stage('Verify Environment') {
             steps {
                 dir('backend') {
@@ -17,7 +15,6 @@ pipeline {
                 }
             }
         }
-
         stage('Build Docker Image') {
             steps {
                 dir('backend') {
