@@ -17,9 +17,7 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-                dir('backend') {
-                    sh 'docker build -t task-app .'
-                }
+                sh 'docker build -t task-app .'
             }
         }
     }
