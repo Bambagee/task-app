@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        IMAGE_NAME = 'bambadra/docker-task-app_repo/task-app'
+        IMAGE_NAME = 'bambadra/docker-task-app_repo'
         IMAGE_TAG = "${BUILD_NUMBER}"
     }
     stages {
