@@ -1,8 +1,7 @@
 pipeline {
     agent any
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-        IMAGE_NAME = 'bambadra/docker-task-app_repo/task-app'
+        IMAGE_NAME = 'bambadra/docker-task-app_repo'
         IMAGE_TAG = "${BUILD_NUMBER}"
     }
     stages {
@@ -27,7 +26,13 @@ pipeline {
         }
         stage('Login to Docker Hub') {
             steps {
-                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-credentials',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_TOKEN'
+                )]) {
+                    sh 'echo $DOCKER_TOKEN | docker login -u $DOCKER_USER --password-stdin'
+                }
             }
         }
         stage('Push Docker Image') {
@@ -50,8 +55,10 @@ pipeline {
             echo 'Pipeline completed successfully - Image pushed to Docker Hub!'
         }
         failure {
-            echo 'Pipeline failed!'
-            sh 'docker logout'
+            node {
+                echo 'Pipeline failed!'
+                sh 'docker logout'
+            }
         }
     }
 }
