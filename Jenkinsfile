@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        IMAGE_NAME = 'bambadra/docker-task-app_repo'
+        IMAGE_NAME = 'bambadra/docker-task-app_repo/task-app'
         IMAGE_TAG = "${BUILD_NUMBER}"
     }
     stages {
@@ -55,10 +55,7 @@ pipeline {
             echo 'Pipeline completed successfully - Image pushed to Docker Hub!'
         }
         failure {
-            node {
-                echo 'Pipeline failed!'
-                sh 'docker logout'
-            }
+            echo 'Pipeline failed - check the logs for details!'
         }
     }
 }
