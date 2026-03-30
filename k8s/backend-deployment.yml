@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: backend
-          image: bambadra/docker-task-app_repo:latest
+          image: bambadra/docker-task-app_repo-backend:latest
           ports:
             - containerPort: 3000
