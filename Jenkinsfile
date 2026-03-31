@@ -1,61 +1,50 @@
 pipeline {
     agent any
     environment {
-        IMAGE_NAME = 'bambadra/docker-task-app_repo'
-        IMAGE_TAG = "${BUILD_NUMBER}"
+        BACKEND_IMAGE  = "bambadra/docker-task-app_repo-backend"
+        FRONTEND_IMAGE = "bambadra/docker-task-app_repo-frontend"
+        VERSION = "${BUILD_NUMBER}"
     }
     stages {
-        stage('Install Dependencies') {
+        stage('Checkout Code') {
             steps {
-                dir('backend') {
-                    sh 'npm install'
-                }
+                checkout scm
             }
         }
-        stage('Verify Environment') {
+        stage('Build Images') {
             steps {
-                dir('backend') {
-                    sh 'node -v'
-                }
+                sh '''
+                docker build -t $BACKEND_IMAGE:$VERSION ./backend
+                docker build -t $FRONTEND_IMAGE:$VERSION ./frontend
+                '''
             }
         }
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
-            }
-        }
-        stage('Login to Docker Hub') {
+        stage('Docker Login') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
                     usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_TOKEN'
+                    passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh 'echo $DOCKER_TOKEN | docker login -u $DOCKER_USER --password-stdin'
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                 }
             }
         }
-        stage('Push Docker Image') {
+        stage('Push Images') {
             steps {
-                sh 'docker push ${IMAGE_NAME}:${IMAGE_TAG}'
-                sh 'docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest'
-                sh 'docker push ${IMAGE_NAME}:latest'
+                sh '''
+                docker push $BACKEND_IMAGE:$VERSION
+                docker push $FRONTEND_IMAGE:$VERSION
+                '''
             }
         }
-        stage('Cleanup') {
+        stage('Deploy to Kubernetes') {
             steps {
-                sh 'docker logout'
-                sh 'docker rmi ${IMAGE_NAME}:${IMAGE_TAG}'
-                sh 'docker rmi ${IMAGE_NAME}:latest'
+                sh '''
+                sudo kubectl set image deployment/backend backend=$BACKEND_IMAGE:$VERSION
+                sudo kubectl set image deployment/frontend frontend=$FRONTEND_IMAGE:$VERSION
+                '''
             }
-        }
-    }
-    post {
-        success {
-            echo 'Pipeline completed successfully - Image pushed to Docker Hub!'
-        }
-        failure {
-            echo 'Pipeline failed - check the logs for details!'
         }
     }
 }
